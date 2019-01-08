@@ -1,0 +1,79 @@
+#language: pt
+
+Funcionalidade: Enviar Mensagem
+
+  Cenario: Envio de mensagem para um contato
+    Dado que o usuário esteja conectado a internet
+	E selecionou um contato
+	Quando escrever a mensagem "OI"
+	E enviar a mensagem
+    Então a mensagem será enviada
+	E será apresentada 2 checks ao lado
+	E a caixa de mensagem estará limpa
+
+	
+  Cenario: Envio de mensagem sem está conectado a internet
+    Dado que o usuário não esteja conectado ao wi-fi
+	E o usuário não esta com a conexão de dados ativa
+	E selecionou um contato
+    Quando escrever a mensagem "OI"
+	E enviar a mensagem
+	Então a mensagem será enviada
+	E será apresentada um relogio ao lado
+	E a caixa de mensagem estará limpa
+	
+
+Funcionalidade:Ligação pelo aplicativo
+
+	Cenario:Realizar ligação para contato específico
+	Dado que tenha um contato selecionado no aplicativo
+	E haja conexão com a internet
+	Quando clicar no chamar
+	Então será realizada uma chamada com o contato selecionado
+	
+	
+	Cenario:Realizar ligação para grupo
+	Dado que selecione a opção de ligação pelo aplicativo
+	E selecione vários contatos
+	E haja conexão com a internet
+	Quando clicar no chamar
+	Então será realizada uma chamada com todos os contatos selecionados ao mesmo tempo
+	
+	
+class TestPrice < Test::Unit::TestCase
+	def price(goods)
+		co = CheckOut.new(RULES)
+		goods.split(//).each { |item| co.scan(item) }
+		co.total 
+	end
+
+	def test_totals
+		assert_equal(  0, price(""))
+		assert_equal( 50, price("A"))
+		assert_equal( 80, price("AB"))
+		assert_equal(115, price("CDBA"))
+		
+		assert_equal(100, price("AA"))
+		assert_equal(130, price("AAA"))
+		assert_equal(180, price("AAAA"))
+		assert_equal(230, price("AAAAA"))
+		assert_equal(260, price("AAAAAA"))
+		
+		assert_equal(160, price("AAAB"))
+		assert_equal(175, price("AAABB"))
+		assert_equal(190, price("AAABBD"))
+		assert_equal(190, price("DABABA"))
+	end
+
+	def test_incremental
+		co = CheckOut.new(RULES)
+		assert_equal( 0, co.total)
+		co.scan("A"); assert_equal( 50, co.total)
+		co.scan("B"); assert_equal( 80, co.total)
+		co.scan("A"); assert_equal(130, co.total)
+		co.scan("A"); assert_equal(160, co.total)
+		co.scan("B"); assert_equal(175, co.total)
+	end 
+end
+
+Até certo ponto, isso é apenas um pequeno problema divertido. Mas por baixo das capas, é um exercício furtivo de desacoplamento. A descrição do desafio não menciona o formato das regras de precificação. Como isso pode ser especificado de tal forma que o checkout não saiba sobre itens específicos e suas estratégias de preços? Como podemos tornar o design flexível o suficiente para que possamos adicionar novos estilos de regras de precificação no futuro?
